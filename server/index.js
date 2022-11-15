@@ -23,6 +23,13 @@ io.on('connection', function(socket) {
   });
 });
 
+app.get('/login', (req, res) => {
+  console.log('hello')
+})
+app.post('/login', (req, res) => {
+  console.log(req.body)
+})
+
 app.use((req, res) => {
   res.send('Hello world');
 });
