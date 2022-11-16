@@ -14,10 +14,12 @@ exports.logInUser = (req, res) => {
 
     if (req.body.password === player.password) {
       playerObject.loggedIn = true;
+
       res.send(playerObject);
     } else {
       playerObject.loggedIn = false;
-      res.send(playerObject);
+
+      res.status(204).send(playerObject);
     }
   })
 

@@ -124,12 +124,12 @@ export default function SplashModal({isShowing, hide, setBank, setUser}) {
     axios.post('/login',userObject)
       .then((result) => {
         console.log(result)
-        if(!result.data.Logg) {
+        if(result.status === 204) {
           alert('User log in failed.')
           return;
         }
-        setUser(result.body.name);
-        setBank(result.body.currentBank);
+        setUser(result.data.name);
+        setBank(result.data.currentBank);
         hide();
       })
       .catch((error) => {

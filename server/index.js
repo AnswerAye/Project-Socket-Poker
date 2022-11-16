@@ -15,12 +15,44 @@ app.use(express.static(path.join(__dirname, '../client/dist')));
 
 
 
-io.on('connection', function(socket) {
+var allPlayers = [];
 
-  console.log(socket.id);
+io.on('connection', function(socket) {
+  //when a user connects
+  socket.on('grabPlayers', function() {
+    socket.emit('players', allPlayers)
+  })
+  //when a user tries to join a table
+  socket.on('joinTable', function(playerInfo) {
+
+    var currentPlayer = {
+      id: socket.id,
+      name: playerInfo.name,
+      bank: playerInfo.bank
+    }
+    if(allPlayers.length <= 9) {
+      allPlayers.push(currentPlayer)
+      console.log(allPlayers)
+      socket.emit('joinSuccessful')
+      socket.broadcast.emit('players', allPlayers)
+      return;
+    }
+    if(allPlayers.length === 9) {
+      socket.emit('tablefull')
+    }
+
+  })
 
   // Disconnect listener
   socket.on('disconnect', function() {
+
+    for(var i = 0; i < allPlayers.length; i++) {
+      if(socket.id === allPlayers[i].id) {
+
+        allPlayers.splice(i,1);
+        console.log(allPlayers)
+      }
+    }
       console.log('Client disconnected.');
   });
 });

@@ -15,7 +15,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _Modal_SplashModal_jsx__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Modal/SplashModal.jsx */ "./client/src/components/Modal/SplashModal.jsx");
-/* harmony import */ var _subcomponents_ModalHook_jsx__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../subcomponents/ModalHook.jsx */ "./client/src/subcomponents/ModalHook.jsx");
+/* harmony import */ var _Table_Table_jsx__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Table/Table.jsx */ "./client/src/components/Table/Table.jsx");
+/* harmony import */ var _subcomponents_ModalHook_jsx__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../subcomponents/ModalHook.jsx */ "./client/src/subcomponents/ModalHook.jsx");
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
@@ -27,6 +28,7 @@ var _require = __webpack_require__(/*! socket.io-client */ "./node_modules/socke
   io = _require.io;
 
 
+
 var socket = io();
 socket.on("connect", function () {
   console.log(socket.id);
@@ -36,7 +38,7 @@ function App() {
     _useState2 = _slicedToArray(_useState, 2),
     loggedIn = _useState2[0],
     setLogIn = _useState2[1];
-  var _useModal = (0,_subcomponents_ModalHook_jsx__WEBPACK_IMPORTED_MODULE_2__["default"])(),
+  var _useModal = (0,_subcomponents_ModalHook_jsx__WEBPACK_IMPORTED_MODULE_3__["default"])(),
     isShowing = _useModal.isShowing,
     toggle = _useModal.toggle;
   var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(0),
@@ -47,7 +49,43 @@ function App() {
     _useState6 = _slicedToArray(_useState5, 2),
     user = _useState6[0],
     setUser = _useState6[1];
+  var _useState7 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]),
+    _useState8 = _slicedToArray(_useState7, 2),
+    currentPlayers = _useState8[0],
+    setPlayers = _useState8[1];
+  var _useState9 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    _useState10 = _slicedToArray(_useState9, 2),
+    onATable = _useState10[0],
+    setTable = _useState10[1];
+  var _useState11 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    _useState12 = _slicedToArray(_useState11, 2),
+    tableFull = _useState12[0],
+    setTablePop = _useState12[1];
+  var _useState13 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    _useState14 = _slicedToArray(_useState13, 2),
+    startGame = _useState14[0],
+    setStartGame = _useState14[1];
+  var joinTable = function joinTable() {
+    var playerInfo = {
+      name: user,
+      bank: bank
+    };
+    socket.emit('joinTable', playerInfo);
+    socket.emit('grabPlayers');
+  };
+  socket.on('players', function (players) {
+    console.log(players);
+    setPlayers(players);
+    console.log(currentPlayers);
+    if (currentPlayers.length === 9) {
+      setTablePop(true);
+    }
+  });
+  socket.on('joinSuccessful', function () {
+    setTable(true);
+  });
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
+    socket.emit('grabPlayers');
     if (!loggedIn) {
       toggle();
     }
@@ -57,6 +95,18 @@ function App() {
     hide: toggle,
     setBank: setBank,
     setUser: setUser
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+    id: "navbar"
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, onATable && !tableFull ? null : /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("button", {
+    onClick: joinTable
+  }, "Join Table")), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, startGame ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("button", {
+    onClick: sendStartGame
+  }) : /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("span", null, "Waiting for ", 4 - currentPlayers.length))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+    id: "table"
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_Table_Table_jsx__WEBPACK_IMPORTED_MODULE_2__["default"], {
+    currentPlayers: currentPlayers
+  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+    id: "userinteraction"
   }));
 }
 
@@ -193,12 +243,12 @@ function SplashModal(_ref) {
     event.preventDefault();
     axios__WEBPACK_IMPORTED_MODULE_3__["default"].post('/login', userObject).then(function (result) {
       console.log(result);
-      if (!result.data.Logg) {
+      if (result.status === 204) {
         alert('User log in failed.');
         return;
       }
-      setUser(result.body.name);
-      setBank(result.body.currentBank);
+      setUser(result.data.name);
+      setBank(result.data.currentBank);
       hide();
     })["catch"](function (error) {
       console.log('failed', error);
@@ -295,6 +345,55 @@ function SplashModal(_ref) {
   } else {
     return null;
   }
+}
+
+/***/ }),
+
+/***/ "./client/src/components/Table/IndPlayer/IndPlayer.jsx":
+/*!*************************************************************!*\
+  !*** ./client/src/components/Table/IndPlayer/IndPlayer.jsx ***!
+  \*************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ IndPlayer)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+
+function IndPlayer(_ref) {
+  var name = _ref.name,
+    bank = _ref.bank;
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, name), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, bank));
+}
+
+/***/ }),
+
+/***/ "./client/src/components/Table/Table.jsx":
+/*!***********************************************!*\
+  !*** ./client/src/components/Table/Table.jsx ***!
+  \***********************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ Table)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _IndPlayer_IndPlayer_jsx__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./IndPlayer/IndPlayer.jsx */ "./client/src/components/Table/IndPlayer/IndPlayer.jsx");
+
+
+function Table(props) {
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, props.currentPlayers.map(function (indPlayer) {
+    /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_IndPlayer_IndPlayer_jsx__WEBPACK_IMPORTED_MODULE_1__["default"], {
+      name: indPlayer.name,
+      bank: indPlayer.bank
+    });
+  }));
 }
 
 /***/ }),
