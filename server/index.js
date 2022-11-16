@@ -5,6 +5,8 @@ var server = require('http').createServer(app);
 const { Server } = require("socket.io");
 var io = require('socket.io')(server);
 const path = require('path');
+const controllers = require('./controllers/players.js')
+const db = require('./db/index.js')
 
 app.use(express.json({limit: '50mb'}));
 app.use(express.urlencoded({limit: '50mb'}));
@@ -23,12 +25,8 @@ io.on('connection', function(socket) {
   });
 });
 
-app.get('/login', (req, res) => {
-  console.log('hello')
-})
-app.post('/login', (req, res) => {
-  console.log(req.body)
-})
+app.post('/login', controllers.logInUser)
+app.post('/signUp', controllers.signUpUser)
 
 app.use((req, res) => {
   res.send('Hello world');

@@ -18,13 +18,24 @@ let checkUsername = false;
 let checkConfirmPassword = false;
 
 
-export default function SplashModal({isShowing, hide}) {
+
+
+
+export default function SplashModal({isShowing, hide, setBank, setUser}) {
 
 
   const [signup, setSignup] = useState(false);
   const [login, setLogin] = useState(false);
 
   const [currentInput, setInput] = useState(initialValues);
+
+
+
+  var userObject = {
+    password: currentInput.password,
+    name: currentInput.username,
+
+  }
 
   var handleInputChange = (e) => {
     const {name, value} = e.target;
@@ -83,7 +94,7 @@ export default function SplashModal({isShowing, hide}) {
     event.preventDefault();
 
     if(!(checkPassword&&checkUsername&&checkConfirmPassword)){
-      if(!checkPassowrd) {
+      if(!checkPassword) {
         alert('Please provide a valid Password')
         return;
       }
@@ -92,21 +103,40 @@ export default function SplashModal({isShowing, hide}) {
     }
 
 
-    var questionObject = {
-      password: currentInput.password,
-      name: currentInput.username,
 
-    }
 
-    axios.post('/login',questionObject)
+    axios.post('/signup',userObject)
       .then((result) => {
         console.log('user', result)
         setInput(initialValues);
+        setBank(500);
+        setUser(currentInput.username);
         hide();
       })
       .catch((error) => {
         console.log('failed', error)
       })
+  }
+
+  var submitLogIn = () => {
+    event.preventDefault();
+
+    axios.post('/login',userObject)
+      .then((result) => {
+        console.log(result)
+        if(!result.data.Logg) {
+          alert('User log in failed.')
+          return;
+        }
+        setUser(result.body.name);
+        setBank(result.body.currentBank);
+        hide();
+      })
+      .catch((error) => {
+        console.log('failed', error)
+      })
+
+
   }
 
 
@@ -186,7 +216,45 @@ export default function SplashModal({isShowing, hide}) {
             </form>
           </div> : null}
           {login === true ? <div>
+              <form>
+                <div id="USERNAMEDIV">
+                  <div>
+                    <span>Username</span>
+                  </div>
+                  <textarea
+                  type="text"
+                  name="username"
+                  className="QANDA"
+                  id="USERNAMEOFINPUT"
+                  autoComplete="off"
+                  value={currentInput.name}
+                  onChange={handleInputChange}
 
+                  ></textarea>
+                  <div>
+                    <span>This will display to all other players and be used as your login.</span>
+                  </div>
+                </div>
+                <div id="PASSWORDDIV">
+                  <div>
+                    <span>Password</span>
+                  </div>
+                  <textarea
+                  type="password"
+                  name="password"
+                  className="QANDA"
+                  id="PASSWORDINPUT"
+                  autoComplete="off"
+                  value={currentInput.name}
+                  onChange={handleInputChange}
+
+                  ></textarea>
+                  <div>
+                    <span>Must be over 16 characters.</span>
+                  </div>
+                </div>
+                <button id="submitButton"onClick={submitLogIn}>Log In!</button>
+              </form>
             </div> : null}
         </div>
       </div>

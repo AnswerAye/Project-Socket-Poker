@@ -18,6 +18,8 @@ export default function App() {
 
   const [loggedIn, setLogIn] = useState(false);
   const {isShowing, toggle} = useModal();
+  const [bank, setBank] = useState(0);
+  const [user, setUser] = useState('Log In!');
 
 
 
@@ -32,6 +34,8 @@ export default function App() {
      <SplashModal
           isShowing={isShowing}
           hide={toggle}
+          setBank={setBank}
+          setUser={setUser}
       />
   </div>)
 }

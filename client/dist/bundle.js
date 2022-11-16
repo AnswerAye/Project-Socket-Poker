@@ -39,6 +39,14 @@ function App() {
   var _useModal = (0,_subcomponents_ModalHook_jsx__WEBPACK_IMPORTED_MODULE_2__["default"])(),
     isShowing = _useModal.isShowing,
     toggle = _useModal.toggle;
+  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(0),
+    _useState4 = _slicedToArray(_useState3, 2),
+    bank = _useState4[0],
+    setBank = _useState4[1];
+  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)('Log In!'),
+    _useState6 = _slicedToArray(_useState5, 2),
+    user = _useState6[0],
+    setUser = _useState6[1];
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
     if (!loggedIn) {
       toggle();
@@ -46,7 +54,9 @@ function App() {
   }, []);
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_Modal_SplashModal_jsx__WEBPACK_IMPORTED_MODULE_1__["default"], {
     isShowing: isShowing,
-    hide: toggle
+    hide: toggle,
+    setBank: setBank,
+    setUser: setUser
   }));
 }
 
@@ -94,7 +104,9 @@ var checkUsername = false;
 var checkConfirmPassword = false;
 function SplashModal(_ref) {
   var isShowing = _ref.isShowing,
-    hide = _ref.hide;
+    hide = _ref.hide,
+    setBank = _ref.setBank,
+    setUser = _ref.setUser;
   var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
     _useState2 = _slicedToArray(_useState, 2),
     signup = _useState2[0],
@@ -107,6 +119,10 @@ function SplashModal(_ref) {
     _useState6 = _slicedToArray(_useState5, 2),
     currentInput = _useState6[0],
     setInput = _useState6[1];
+  var userObject = {
+    password: currentInput.password,
+    name: currentInput.username
+  };
   var handleInputChange = function handleInputChange(e) {
     var _e$target = e.target,
       name = _e$target.name,
@@ -156,20 +172,33 @@ function SplashModal(_ref) {
   var submitSignUp = function submitSignUp() {
     event.preventDefault();
     if (!(checkPassword && checkUsername && checkConfirmPassword)) {
-      if (!checkPassowrd) {
+      if (!checkPassword) {
         alert('Please provide a valid Password');
         return;
       }
       alert('Please make sure your password is the same in both fields.');
       return;
     }
-    var questionObject = {
-      password: currentInput.password,
-      name: currentInput.username
-    };
-    axios__WEBPACK_IMPORTED_MODULE_3__["default"].post('/login', questionObject).then(function (result) {
+    axios__WEBPACK_IMPORTED_MODULE_3__["default"].post('/signup', userObject).then(function (result) {
       console.log('user', result);
       setInput(initialValues);
+      setBank(500);
+      setUser(currentInput.username);
+      hide();
+    })["catch"](function (error) {
+      console.log('failed', error);
+    });
+  };
+  var submitLogIn = function submitLogIn() {
+    event.preventDefault();
+    axios__WEBPACK_IMPORTED_MODULE_3__["default"].post('/login', userObject).then(function (result) {
+      console.log(result);
+      if (!result.data.Logg) {
+        alert('User log in failed.');
+        return;
+      }
+      setUser(result.body.name);
+      setBank(result.body.currentBank);
       hide();
     })["catch"](function (error) {
       console.log('failed', error);
@@ -239,7 +268,30 @@ function SplashModal(_ref) {
     }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("span", null, "Passwords must match."))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("button", {
       id: "submitButton",
       onClick: submitSignUp
-    }, "Sign up!"))) : null, login === true ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null) : null))), document.body);
+    }, "Sign up!"))) : null, login === true ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("form", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+      id: "USERNAMEDIV"
+    }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("span", null, "Username")), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("textarea", {
+      type: "text",
+      name: "username",
+      className: "QANDA",
+      id: "USERNAMEOFINPUT",
+      autoComplete: "off",
+      value: currentInput.name,
+      onChange: handleInputChange
+    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("span", null, "This will display to all other players and be used as your login."))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+      id: "PASSWORDDIV"
+    }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("span", null, "Password")), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("textarea", {
+      type: "password",
+      name: "password",
+      className: "QANDA",
+      id: "PASSWORDINPUT",
+      autoComplete: "off",
+      value: currentInput.name,
+      onChange: handleInputChange
+    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("span", null, "Must be over 16 characters."))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("button", {
+      id: "submitButton",
+      onClick: submitLogIn
+    }, "Log In!"))) : null))), document.body);
   } else {
     return null;
   }
