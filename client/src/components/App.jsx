@@ -25,8 +25,10 @@ export default function App() {
   const [user, setUser] = useState('Log In!');
   const [currentPlayers, setPlayers] = useState([]);
   const [onATable, setTable] = useState(false);
-  const [tableFull, setTablePop] = useState(false)
-  const [startGame, setStartGame] = useState(false);
+  const [tableFull, setTablePop] = useState(false);
+  const [currentTurn, setTurn] = useState({});
+  const [gameStarted, setGameStarted] = useState(false);
+  const [hole, setHole] = useState([]);
 
 
   var joinTable = () => {
@@ -38,6 +40,19 @@ export default function App() {
     socket.emit('joinTable', playerInfo)
     socket.emit('grabPlayers');
 
+  }
+
+  var sendStartGame = () => {
+    socket.emit('roundStart')
+  }
+
+  var handlePlayerAction = (e) => {
+
+    var actionObject = {
+      name: user,
+      action: e.target.name
+    }
+    socket.emit('playerAction', actionObject)
   }
 
 
@@ -52,6 +67,37 @@ export default function App() {
   socket.on('joinSuccessful', () => {
     setTable(true)
   })
+
+  socket.on('boardCards', (boardArray) => {
+    setBoard(boardArray)
+    console.log(boardArray)
+  })
+
+  socket.on('trackTurns', (player) => {
+    setGameStarted(true);
+    setTurn(player);
+  })
+
+  socket.on('giveCards', (cards) => {
+    setHole(cards);
+  })
+  const unMatrixCards = (hand) => {
+    const values = "23456789TJQKA";
+    const suits = [`♣︎`, `♦︎`, `♥︎`, `♠︎`];
+
+
+    return hand.reduce((obj, item) => {
+      obj.push(
+        `${values[item % 13]}${
+          suits[Math.floor(item / 13)]
+        }`
+      );
+      return obj;
+    }, [])
+      .join(" ");
+  }
+
+
 
 
 
@@ -76,17 +122,20 @@ export default function App() {
           {onATable && !tableFull ? null : <button onClick={joinTable}>Join Table</button>}
         </div>
         <div>
-          {startGame ? <button onClick={sendStartGame}></button> : <span>Waiting for {4 - currentPlayers.length}</span>}
+          {currentPlayers.length >= 2 && !gameStarted ? <button onClick={sendStartGame}>Start The Game!</button> : <span>Waiting for {4 - currentPlayers.length}</span>}
         </div>
       </div>
       <div id="table">
         <Table
           currentPlayers={currentPlayers}
-
+          currentTurn={currentTurn}
+          hole={hole}
+          user={user}
+          unMatrixCards={unMatrixCards}
         />
-
       </div>
       <div id="userinteraction">
+        {currentTurn === user ? <button name="check" onClick={handlePlayerAction}>Check</button> : null}
 
       </div>
   </div>)
