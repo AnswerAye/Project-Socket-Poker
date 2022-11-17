@@ -13,6 +13,13 @@ console.log(socket.id)
 
 
 
+const initialValues = {
+  betnumber: ""
+}
+
+function isNumeric(value) {
+  return /^-?\d+$/.test(value);
+}
 
 
 
@@ -24,12 +31,16 @@ export default function App() {
   const [bank, setBank] = useState(0);
   const [user, setUser] = useState('Log In!');
   const [currentPlayers, setPlayers] = useState([]);
+  const [currentPlayersinHand, setPlayersinHand] = useState([]);
   const [onATable, setTable] = useState(false);
   const [tableFull, setTablePop] = useState(false);
   const [currentTurn, setTurn] = useState({});
   const [gameStarted, setGameStarted] = useState(false);
   const [hole, setHole] = useState([]);
   const [board, setBoard] = useState([]);
+  const [currentInput, setInput] = useState(initialValues)
+  const [activeBet, setBet] = useState(0);
+
 
 
   var joinTable = () => {
@@ -49,11 +60,65 @@ export default function App() {
 
   var handlePlayerAction = (e) => {
 
+    const {name} = e.target;
+
+    if(currentInput.betnumber > bank) {
+      alert('Please bet an amount within your bank')
+      setInput(initialValues)
+      return;
+    }
+
     var actionObject = {
       name: user,
-      action: e.target.name
+      action: name,
+      betnumber: currentInput.betnumber
     }
     socket.emit('playerAction', actionObject)
+
+
+
+    if(name === 'bet') {
+      setInput(initialValues)
+    }
+
+
+  }
+
+  var handleInputChange = (e) => {
+    const {name, value} = e.target;
+
+    if(name === 'betnumber') {
+      if(value === "") {
+        setInput({
+          ...currentInput,
+          [name]: value
+        })
+      }
+      if(!isNumeric(value)) {
+        return;
+      }
+    }
+
+    setInput({
+      ...currentInput,
+      [name]: value
+    })
+  }
+
+  const unMatrixCards = (hand) => {
+    const values = "23456789TJQKA";
+    const suits = [`♣︎`, `♦︎`, `♥︎`, `♠︎`];
+
+
+    return hand.reduce((obj, item) => {
+      obj.push(
+        `${values[item % 13]}${
+          suits[Math.floor(item / 13)]
+        }`
+      );
+      return obj;
+    }, [])
+      .join(" ");
   }
 
 
@@ -82,21 +147,15 @@ export default function App() {
   socket.on('giveCards', (cards) => {
     setHole(cards);
   })
-  const unMatrixCards = (hand) => {
-    const values = "23456789TJQKA";
-    const suits = [`♣︎`, `♦︎`, `♥︎`, `♠︎`];
 
+  socket.on('bet', (bet) => {
+    setBet(bet);
+  })
 
-    return hand.reduce((obj, item) => {
-      obj.push(
-        `${values[item % 13]}${
-          suits[Math.floor(item / 13)]
-        }`
-      );
-      return obj;
-    }, [])
-      .join(" ");
-  }
+  socket.on('bettingRoundOver', () => {
+    setBet(0);
+  })
+
 
 
 
@@ -123,23 +182,30 @@ export default function App() {
           {onATable && !tableFull ? null : <button onClick={joinTable}>Join Table</button>}
         </div>
         <div>
-          {currentPlayers.length >= 2 && !gameStarted ? <button onClick={sendStartGame}>Start The Game!</button> : null}
-          {gameStarted ? null : <span>Waiting for {4 - currentPlayers.length}</span>}
+          {currentPlayers.length >= 2 && !gameStarted && onATable ? <button onClick={sendStartGame}>Start The Game!</button> : null}
+
         </div>
       </div>
       <div id="table">
-        <Table
-          currentPlayers={currentPlayers}
-          currentTurn={currentTurn}
-          hole={hole}
-          user={user}
-          unMatrixCards={unMatrixCards}
-          board={board}
-        />
+
+        {gameStarted ? <Table
+            currentPlayers={currentPlayers}
+            currentPlayersinHand={currentPlayersinHand}
+            currentTurn={currentTurn}
+            hole={hole}
+            user={user}
+            unMatrixCards={unMatrixCards}
+            board={board}
+          /> : <div>Waiting for {4 - currentPlayers.length}</div>}
+
       </div>
       <div id="userinteraction">
-        {currentTurn === user ? <button name="check" onClick={handlePlayerAction}>Check</button> : null}
+        {currentTurn === user && activeBet === 0? <button name="check" onClick={handlePlayerAction}>Check</button> : null}
+        {currentTurn === user && activeBet > 0 ? <button name="call" onClick={handlePlayerAction}>Call</button> : null}
         {currentTurn === user ? <button name="fold" onClick={handlePlayerAction}>Fold</button> : null}
+        {currentTurn === user ? <input name="betnumber" value={currentInput.betnumber} onChange={handleInputChange}></input> : null}
+        {currentTurn === user ? <button name="bet" onClick={handlePlayerAction}>Bet</button> : null}
+
 
       </div>
   </div>)

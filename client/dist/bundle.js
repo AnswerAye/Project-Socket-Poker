@@ -17,6 +17,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _Modal_SplashModal_jsx__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Modal/SplashModal.jsx */ "./client/src/components/Modal/SplashModal.jsx");
 /* harmony import */ var _Table_Table_jsx__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Table/Table.jsx */ "./client/src/components/Table/Table.jsx");
 /* harmony import */ var _subcomponents_ModalHook_jsx__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../subcomponents/ModalHook.jsx */ "./client/src/subcomponents/ModalHook.jsx");
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { _defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
@@ -33,6 +36,12 @@ var socket = io();
 socket.on("connect", function () {
   console.log(socket.id);
 });
+var initialValues = {
+  betnumber: ""
+};
+function isNumeric(value) {
+  return /^-?\d+$/.test(value);
+}
 function App() {
   var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
     _useState2 = _slicedToArray(_useState, 2),
@@ -53,30 +62,42 @@ function App() {
     _useState8 = _slicedToArray(_useState7, 2),
     currentPlayers = _useState8[0],
     setPlayers = _useState8[1];
-  var _useState9 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+  var _useState9 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]),
     _useState10 = _slicedToArray(_useState9, 2),
-    onATable = _useState10[0],
-    setTable = _useState10[1];
+    currentPlayersinHand = _useState10[0],
+    setPlayersinHand = _useState10[1];
   var _useState11 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
     _useState12 = _slicedToArray(_useState11, 2),
-    tableFull = _useState12[0],
-    setTablePop = _useState12[1];
-  var _useState13 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({}),
+    onATable = _useState12[0],
+    setTable = _useState12[1];
+  var _useState13 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
     _useState14 = _slicedToArray(_useState13, 2),
-    currentTurn = _useState14[0],
-    setTurn = _useState14[1];
-  var _useState15 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    tableFull = _useState14[0],
+    setTablePop = _useState14[1];
+  var _useState15 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({}),
     _useState16 = _slicedToArray(_useState15, 2),
-    gameStarted = _useState16[0],
-    setGameStarted = _useState16[1];
-  var _useState17 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]),
+    currentTurn = _useState16[0],
+    setTurn = _useState16[1];
+  var _useState17 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
     _useState18 = _slicedToArray(_useState17, 2),
-    hole = _useState18[0],
-    setHole = _useState18[1];
+    gameStarted = _useState18[0],
+    setGameStarted = _useState18[1];
   var _useState19 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]),
     _useState20 = _slicedToArray(_useState19, 2),
-    board = _useState20[0],
-    setBoard = _useState20[1];
+    hole = _useState20[0],
+    setHole = _useState20[1];
+  var _useState21 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]),
+    _useState22 = _slicedToArray(_useState21, 2),
+    board = _useState22[0],
+    setBoard = _useState22[1];
+  var _useState23 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(initialValues),
+    _useState24 = _slicedToArray(_useState23, 2),
+    currentInput = _useState24[0],
+    setInput = _useState24[1];
+  var _useState25 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(0),
+    _useState26 = _slicedToArray(_useState25, 2),
+    activeBet = _useState26[0],
+    setBet = _useState26[1];
   var joinTable = function joinTable() {
     var playerInfo = {
       name: user,
@@ -89,11 +110,43 @@ function App() {
     socket.emit('roundStart');
   };
   var handlePlayerAction = function handlePlayerAction(e) {
+    var name = e.target.name;
+    if (currentInput.betnumber > bank) {
+      alert('Please bet an amount within your bank');
+      setInput(initialValues);
+      return;
+    }
     var actionObject = {
       name: user,
-      action: e.target.name
+      action: name,
+      betnumber: currentInput.betnumber
     };
     socket.emit('playerAction', actionObject);
+    if (name === 'bet') {
+      setInput(initialValues);
+    }
+  };
+  var handleInputChange = function handleInputChange(e) {
+    var _e$target = e.target,
+      name = _e$target.name,
+      value = _e$target.value;
+    if (name === 'betnumber') {
+      if (value === "") {
+        setInput(_objectSpread(_objectSpread({}, currentInput), {}, _defineProperty({}, name, value)));
+      }
+      if (!isNumeric(value)) {
+        return;
+      }
+    }
+    setInput(_objectSpread(_objectSpread({}, currentInput), {}, _defineProperty({}, name, value)));
+  };
+  var unMatrixCards = function unMatrixCards(hand) {
+    var values = "23456789TJQKA";
+    var suits = ["\u2663\uFE0E", "\u2666\uFE0E", "\u2665\uFE0E", "\u2660\uFE0E"];
+    return hand.reduce(function (obj, item) {
+      obj.push("".concat(values[item % 13]).concat(suits[Math.floor(item / 13)]));
+      return obj;
+    }, []).join(" ");
   };
   socket.on('players', function (players) {
     console.log(players);
@@ -117,14 +170,12 @@ function App() {
   socket.on('giveCards', function (cards) {
     setHole(cards);
   });
-  var unMatrixCards = function unMatrixCards(hand) {
-    var values = "23456789TJQKA";
-    var suits = ["\u2663\uFE0E", "\u2666\uFE0E", "\u2665\uFE0E", "\u2660\uFE0E"];
-    return hand.reduce(function (obj, item) {
-      obj.push("".concat(values[item % 13]).concat(suits[Math.floor(item / 13)]));
-      return obj;
-    }, []).join(" ");
-  };
+  socket.on('bet', function (bet) {
+    setBet(bet);
+  });
+  socket.on('bettingRoundOver', function () {
+    setBet(0);
+  });
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
     socket.emit('grabPlayers');
     if (!loggedIn) {
@@ -140,26 +191,37 @@ function App() {
     id: "navbar"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, onATable && !tableFull ? null : /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("button", {
     onClick: joinTable
-  }, "Join Table")), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, currentPlayers.length >= 2 && !gameStarted ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("button", {
+  }, "Join Table")), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, currentPlayers.length >= 2 && !gameStarted && onATable ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("button", {
     onClick: sendStartGame
-  }, "Start The Game!") : null, gameStarted ? null : /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("span", null, "Waiting for ", 4 - currentPlayers.length))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+  }, "Start The Game!") : null)), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     id: "table"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_Table_Table_jsx__WEBPACK_IMPORTED_MODULE_2__["default"], {
+  }, gameStarted ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_Table_Table_jsx__WEBPACK_IMPORTED_MODULE_2__["default"], {
     currentPlayers: currentPlayers,
+    currentPlayersinHand: currentPlayersinHand,
     currentTurn: currentTurn,
     hole: hole,
     user: user,
     unMatrixCards: unMatrixCards,
     board: board
-  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+  }) : /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, "Waiting for ", 4 - currentPlayers.length)), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     id: "userinteraction"
-  }, currentTurn === user ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("button", {
+  }, currentTurn === user && activeBet === 0 ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("button", {
     name: "check",
     onClick: handlePlayerAction
-  }, "Check") : null, currentTurn === user ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("button", {
+  }, "Check") : null, currentTurn === user && activeBet > 0 ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("button", {
+    name: "call",
+    onClick: handlePlayerAction
+  }, "Call") : null, currentTurn === user ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("button", {
     name: "fold",
     onClick: handlePlayerAction
-  }, "Fold") : null));
+  }, "Fold") : null, currentTurn === user ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("input", {
+    name: "betnumber",
+    value: currentInput.betnumber,
+    onChange: handleInputChange
+  }) : null, currentTurn === user ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("button", {
+    name: "bet",
+    onClick: handlePlayerAction
+  }, "Bet") : null));
 }
 
 /***/ }),

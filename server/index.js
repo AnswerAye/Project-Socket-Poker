@@ -41,6 +41,7 @@ var newBettingRound = () => {
   counter = 0;
   let turn = allPlayersInRound[counter].name
   io.emit('trackTurns', turn)
+  io.emit('bettingRoundOver')
 }
 
 var newRound = () => {
@@ -65,12 +66,13 @@ var newRound = () => {
   let turn = allPlayersInRound[counter].name
   console.log(deck)
   board = [];
+  io.emit('boardCards', board)
   io.emit('trackTurns', turn)
 }
 
 async function resolveShowdown() {
   var showdownObject = await algo.handleShowdown(board, allPlayersInRound);
-  console.log(winner)
+  console.log(showdownObject)
   io.emit('winner', showdownObject.winners)
   setTimeout(() => {
   newRound();
@@ -114,19 +116,34 @@ io.on('connection', function(socket) {
   socket.on('playerAction', function(actionObject) {
 
     if(actionObject.action === 'fold') {
-      for(let i = 0; i < allPlayersInRound.length - 1; i++) {
+      for(let i = 0; i < allPlayersInRound.length; i++) {
         if(allPlayersInRound[i].name === actionObject.name) {
           console.log('currentPlayer',allPlayersInRound)
           allPlayersInRound.splice(i,1)
           console.log('currentPlayer after deletion',allPlayersInRound)
-          console.log('allPlayers after deletion',allPlayers)
+          counter--
+
         }
       }
     }
 
+    if(actionObject.action === 'bet') {
+      turnAllPlayersFalse();
+      io.emit('bet', actionObject.betnumber)
+      allPlayersInRound.forEach((singlePlayer) => {
+        if(singlePlayer.name === actionObject.name) {
+          singlePlayer.bank = singlePlayer.bank - actionObject.betnumber
+        }
+      })
 
+      console.log(allPlayersInRound)
+      socket.emit('players', allPlayers)
+
+
+    }
+
+    //If theres no one left in the round
     if(allPlayersInRound.length < 2) {
-      console.log('entered here')
       var roundEndObject = {
         name: allPlayersInRound[0].name,
         potSize: potSize
@@ -136,60 +153,63 @@ io.on('connection', function(socket) {
         newRound();
       }, 5000)
 
-    }
-
-    for(let i = 0; i < allPlayersInRound.length; i++) {
-      if(allPlayersInRound[i].name === actionObject.name) {
-        allPlayersInRound[i].acted = true;
-      }
-
-    }
-
-    allPlayersActed = true;
-    for(let i = 0; i < allPlayersInRound.length; i++) {
-      if(allPlayersInRound[i].acted === false) {
-        allPlayersActed = false;
-      }
-    }
-
-    if(allPlayersActed) {
-      console.log('yes its working')
-      if(!flop) {
-        deck.pop();
-        for(let i = 0; i < 3; i++) {
-          board.push(deck.pop());
-        }
-        turnAllPlayersFalse();
-        flop = true;
-        newBettingRound();
-        io.emit('boardCards', board)
-
-      }else if (!turn) {
-        deck.pop();
-        board.push(deck.pop());
-        turn = true;
-        newBettingRound();
-        turnAllPlayersFalse();
-        io.emit('boardCards', board)
-      } else if (!river) {
-        deck.pop();
-        board.push(deck.pop());
-        river = true;
-        newBettingRound();
-        turnAllPlayersFalse();
-        io.emit('boardCards', board)
-      } else {
-        resolveShowdown();
-      }
     } else {
-      counter++
-      if(counter > allPlayersInRound.length - 1) {
-        console.log(counter)
-        counter = 0
+      for(let i = 0; i < allPlayersInRound.length; i++) {
+        if(allPlayersInRound[i].name === actionObject.name) {
+          allPlayersInRound[i].acted = true;
+        }
+
       }
-      let turn = allPlayersInRound[counter].name
-      io.emit('trackTurns', turn)
+      //check to see if all the players have finished acting
+      allPlayersActed = true;
+      for(let i = 0; i < allPlayersInRound.length; i++) {
+        if(allPlayersInRound[i].acted === false) {
+          allPlayersActed = false;
+        }
+      }
+      //move forward the betting rounds
+      if(allPlayersActed) {
+        console.log('yes its working')
+        if(!flop) {
+          deck.pop();
+          for(let i = 0; i < 3; i++) {
+            board.push(deck.pop());
+          }
+          turnAllPlayersFalse();
+          flop = true;
+          newBettingRound();
+          io.emit('boardCards', board)
+
+        }else if (!turn) {
+          deck.pop();
+          board.push(deck.pop());
+          turn = true;
+          newBettingRound();
+          turnAllPlayersFalse();
+          io.emit('boardCards', board)
+        } else if (!river) {
+          deck.pop();
+          board.push(deck.pop());
+          river = true;
+          newBettingRound();
+          turnAllPlayersFalse();
+          io.emit('boardCards', board)
+        } else {
+          resolveShowdown();
+        }
+      } else {
+        //start the next turn
+        counter++
+        if(counter > allPlayersInRound.length - 1) {
+          console.log(counter)
+          counter = 0
+        }
+        let turn = allPlayersInRound[counter].name
+        io.emit('trackTurns', turn)
+      }
+
     }
+    //set the player who just acted to true
 
 
 
