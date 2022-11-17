@@ -25,8 +25,21 @@ var flop= false;
 var turn= false;
 var river= false;
 var activeBet= true;
-var allPlayersActed= true;
+var allPlayersActed;
 var board = [];
+
+
+
+var turnAllPlayersFalse = () => {
+  for(let player = 0; player < allPlayersInRound.length; player += 1) {
+    allPlayersInRound[player].acted = false;
+  }
+}
+var newBettingRound = () => {
+  counter = 0;
+  let turn = allPlayersInRound[counter].name
+  io.emit('trackTurns', turn)
+}
 
 
 
@@ -80,6 +93,14 @@ io.on('connection', function(socket) {
   //on Player action
   socket.on('playerAction', function(actionObject) {
 
+    if(actionObject.action === 'fold') {
+      for(let i = 0; i < allPlayersInROund.length; i++) {
+        if(allPlayersInRound[i].name === actionObject.name) {
+          allPlayersInRound[i].splice(i,1)
+        }
+      }
+    }
+
     for(let i = 0; i < allPlayersInRound.length; i++) {
       if(allPlayersInRound[i].name === actionObject.name) {
         allPlayersInRound[i].acted = true;
@@ -87,7 +108,7 @@ io.on('connection', function(socket) {
 
     }
 
-
+    allPlayersActed = true;
     for(let i = 0; i < allPlayersInRound.length; i++) {
       if(allPlayersInRound[i].acted === false) {
         allPlayersActed = false;
@@ -97,10 +118,31 @@ io.on('connection', function(socket) {
     if(allPlayersActed) {
       console.log('yes its working')
       if(!flop) {
+        deck.pop();
         for(let i = 0; i < 3; i++) {
           board.push(deck.pop());
         }
+        turnAllPlayersFalse();
+        flop = true;
+        newBettingRound();
         io.emit('boardCards', board)
+
+      }else if (!turn) {
+        deck.pop();
+        board.push(deck.pop());
+        turn = true;
+        newBettingRound();
+        turnAllPlayersFalse();
+        io.emit('boardCards', board)
+      } else if (!river) {
+        deck.pop();
+        board.push(deck.pop());
+        river = true;
+        newBettingRound();
+        turnAllPlayersFalse();
+        io.emit('boardCards', board)
+      } else {
+        var winner = handleShowdown();
       }
     } else {
       counter++

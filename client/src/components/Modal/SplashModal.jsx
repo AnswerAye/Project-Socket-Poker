@@ -148,9 +148,6 @@ export default function SplashModal({isShowing, hide, setBank, setUser}) {
       <div className="modal-wrapper" aria-modal aria-hidden tabIndex={-1} role="dialog">
         <div className="modal">
           <div className="modal-header">
-            <button type="button" className="modal-close-button" data-dismiss="modal" aria-label="Close" onClick={hide}>
-              <span aria-hidden="true">&times;</span>
-            </button>
           </div>
           {signup === false && login === false ? <div>
             <button onClick={(e) => {e.preventDefault(); setSignup(true);}}>Sign Up</button>

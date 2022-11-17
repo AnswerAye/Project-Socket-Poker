@@ -73,6 +73,10 @@ function App() {
     _useState18 = _slicedToArray(_useState17, 2),
     hole = _useState18[0],
     setHole = _useState18[1];
+  var _useState19 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]),
+    _useState20 = _slicedToArray(_useState19, 2),
+    board = _useState20[0],
+    setBoard = _useState20[1];
   var joinTable = function joinTable() {
     var playerInfo = {
       name: user,
@@ -138,14 +142,15 @@ function App() {
     onClick: joinTable
   }, "Join Table")), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, currentPlayers.length >= 2 && !gameStarted ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("button", {
     onClick: sendStartGame
-  }, "Start The Game!") : /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("span", null, "Waiting for ", 4 - currentPlayers.length))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+  }, "Start The Game!") : null, gameStarted ? null : /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("span", null, "Waiting for ", 4 - currentPlayers.length))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     id: "table"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_Table_Table_jsx__WEBPACK_IMPORTED_MODULE_2__["default"], {
     currentPlayers: currentPlayers,
     currentTurn: currentTurn,
     hole: hole,
     user: user,
-    unMatrixCards: unMatrixCards
+    unMatrixCards: unMatrixCards,
+    board: board
   })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     id: "userinteraction"
   }, currentTurn === user ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("button", {
@@ -311,15 +316,7 @@ function SplashModal(_ref) {
       className: "modal"
     }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
       className: "modal-header"
-    }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("button", {
-      type: "button",
-      className: "modal-close-button",
-      "data-dismiss": "modal",
-      "aria-label": "Close",
-      onClick: hide
-    }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("span", {
-      "aria-hidden": "true"
-    }, "\xD7"))), signup === false && login === false ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("button", {
+    }), signup === false && login === false ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("button", {
       onClick: function onClick(e) {
         e.preventDefault();
         setSignup(true);
@@ -441,8 +438,13 @@ function Table(_ref) {
     currentTurn = _ref.currentTurn,
     hole = _ref.hole,
     user = _ref.user,
-    unMatrixCards = _ref.unMatrixCards;
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, currentPlayers.map(function (indPlayer) {
+    unMatrixCards = _ref.unMatrixCards,
+    board = _ref.board;
+  var easyBoard;
+  if (board.length > 0) {
+    easyBoard = unMatrixCards(board);
+  }
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, board.length > 0 ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, easyBoard) : null, currentPlayers.map(function (indPlayer) {
     var turnTracker = indPlayer.name === currentTurn;
     return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_IndPlayer_IndPlayer_jsx__WEBPACK_IMPORTED_MODULE_1__["default"], {
       key: Math.random(),

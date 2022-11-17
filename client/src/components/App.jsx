@@ -29,6 +29,7 @@ export default function App() {
   const [currentTurn, setTurn] = useState({});
   const [gameStarted, setGameStarted] = useState(false);
   const [hole, setHole] = useState([]);
+  const [board, setBoard] = useState([]);
 
 
   var joinTable = () => {
@@ -122,7 +123,8 @@ export default function App() {
           {onATable && !tableFull ? null : <button onClick={joinTable}>Join Table</button>}
         </div>
         <div>
-          {currentPlayers.length >= 2 && !gameStarted ? <button onClick={sendStartGame}>Start The Game!</button> : <span>Waiting for {4 - currentPlayers.length}</span>}
+          {currentPlayers.length >= 2 && !gameStarted ? <button onClick={sendStartGame}>Start The Game!</button> : null}
+          {gameStarted ? null : <span>Waiting for {4 - currentPlayers.length}</span>}
         </div>
       </div>
       <div id="table">
@@ -132,6 +134,7 @@ export default function App() {
           hole={hole}
           user={user}
           unMatrixCards={unMatrixCards}
+          board={board}
         />
       </div>
       <div id="userinteraction">
