@@ -156,7 +156,10 @@ function App() {
   }, currentTurn === user ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("button", {
     name: "check",
     onClick: handlePlayerAction
-  }, "Check") : null));
+  }, "Check") : null, currentTurn === user ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("button", {
+    name: "fold",
+    onClick: handlePlayerAction
+  }, "Fold") : null));
 }
 
 /***/ }),

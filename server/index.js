@@ -19,6 +19,7 @@ app.use(express.static(path.join(__dirname, '../client/dist')));
 var allPlayers = [];
 var allPlayersInRound = [];
 var counter = 0;
+var dealerButton = 0;
 
 var deck = []
 var flop= false;
@@ -27,6 +28,7 @@ var river= false;
 var activeBet= true;
 var allPlayersActed;
 var board = [];
+var potSize = 0;
 
 
 
@@ -39,6 +41,41 @@ var newBettingRound = () => {
   counter = 0;
   let turn = allPlayersInRound[counter].name
   io.emit('trackTurns', turn)
+}
+
+var newRound = () => {
+  console.log('round generation',allPlayers);
+  allPlayersInRound = JSON.parse(JSON.stringify(allPlayers));
+  console.log('after assignment',allPlayersInRound);
+  deck = algo.buildDeck();
+
+  for (let card = 0; card < 2; card += 1) {
+    for(let player = 0; player < allPlayersInRound.length; player += 1) {
+      allPlayersInRound[player].hole.push(deck.pop());
+      allPlayersInRound[player].acted = false;
+    }
+  }
+
+  for(let i = 0; i < allPlayersInRound.length; i += 1) {
+    io.to(allPlayersInRound[i].id).emit('giveCards', allPlayersInRound[i].hole)
+  }
+
+  counter = 0;
+
+  let turn = allPlayersInRound[counter].name
+  console.log(deck)
+  board = [];
+  io.emit('trackTurns', turn)
+}
+
+async function resolveShowdown() {
+  var showdownObject = await algo.handleShowdown(board, allPlayersInRound);
+  console.log(winner)
+  io.emit('winner', showdownObject.winners)
+  setTimeout(() => {
+  newRound();
+  io.emit('boardCards', board)
+}, 5000)
 }
 
 
@@ -71,34 +108,34 @@ io.on('connection', function(socket) {
   })
   //handle game start
   socket.on('roundStart', function() {
-
-    allPlayersInRound = allPlayers;
-    deck = algo.buildDeck();
-
-    for (let card = 0; card < 2; card += 1) {
-      for(let player = 0; player < allPlayersInRound.length; player += 1) {
-        allPlayersInRound[player].hole.push(deck.pop());
-        allPlayersInRound[player].acted = false;
-      }
-    }
-
-    for(let i = 0; i < allPlayersInRound.length; i += 1) {
-      io.to(allPlayersInRound[i].id).emit('giveCards', allPlayersInRound[i].hole)
-    }
-
-    let turn = allPlayersInRound[counter].name
-    console.log(deck)
-    io.emit('trackTurns', turn)
+    newRound();
   })
   //on Player action
   socket.on('playerAction', function(actionObject) {
 
     if(actionObject.action === 'fold') {
-      for(let i = 0; i < allPlayersInROund.length; i++) {
+      for(let i = 0; i < allPlayersInRound.length - 1; i++) {
         if(allPlayersInRound[i].name === actionObject.name) {
-          allPlayersInRound[i].splice(i,1)
+          console.log('currentPlayer',allPlayersInRound)
+          allPlayersInRound.splice(i,1)
+          console.log('currentPlayer after deletion',allPlayersInRound)
+          console.log('allPlayers after deletion',allPlayers)
         }
       }
+    }
+
+
+    if(allPlayersInRound.length < 2) {
+      console.log('entered here')
+      var roundEndObject = {
+        name: allPlayersInRound[0].name,
+        potSize: potSize
+      }
+      io.emit('winner', allPlayersInRound[0].name)
+      setTimeout(() => {
+        newRound();
+      }, 5000)
+
     }
 
     for(let i = 0; i < allPlayersInRound.length; i++) {
@@ -142,7 +179,7 @@ io.on('connection', function(socket) {
         turnAllPlayersFalse();
         io.emit('boardCards', board)
       } else {
-        var winner = handleShowdown();
+        resolveShowdown();
       }
     } else {
       counter++

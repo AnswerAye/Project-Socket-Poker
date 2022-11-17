@@ -139,6 +139,7 @@ export default function App() {
       </div>
       <div id="userinteraction">
         {currentTurn === user ? <button name="check" onClick={handlePlayerAction}>Check</button> : null}
+        {currentTurn === user ? <button name="fold" onClick={handlePlayerAction}>Fold</button> : null}
 
       </div>
   </div>)

@@ -1,18 +1,68 @@
-const NUM_CARDS_IN_DECK = 52;
-const NUM_VALUES_IN_DECK = 13;
-const NUM_SUITS_IN_DECK = 4;
-const NUM_CARDS_IN_HAND = 5;
-const ACE_VALUE = Math.pow(2, 13);
-const STRAIGHT_LOW_ACE_INDICATOR = parseInt("10000000011110", 2);
-const TEN_CARD_POSITION = 8;
-const RANK_BASE_VALUE = Math.pow(10, 9);
+const axios = require('axios');
 
-
-module.exports.buildDeck = () => {
-  let deck = Array.from(new Array(NUM_CARDS_IN_DECK), (_, index) => index);
-  let count = NUM_CARDS_IN_DECK + 1;
+var buildDeck = () => {
+  let deck = Array.from(new Array(52), (_, index) => index);
+  let count = 52 + 1;
   while ((count -= 1)) {
     deck.push(deck.splice(Math.floor(Math.random() * count), 1)[0]);
   }
   return deck;
 };
+
+var unMatrixCards = (hand) => {
+  const values = "23456789TJQKA";
+  const suits = [`C`, `D`, `H`, `S`];
+
+  console.log(hand)
+  return hand.reduce((obj, item) => {
+    obj.push(
+      `${values[item % 13]}${
+        suits[Math.floor(item / 13)]
+      }`
+    );
+    return obj;
+  }, [])
+    .join(",");
+}
+
+var handleShowdown = (board, playerArray) => {
+  var stringedBoard = unMatrixCards(board).toString();
+
+  console.log('playerArray',playerArray)
+
+
+  var stringedHands = [];
+
+  playerArray.forEach((player) => {
+    let copy = player
+    stringedHands.push({...player, hole: unMatrixCards(player.hole).toString()})
+  })
+
+
+  console.log('board',stringedBoard)
+  console.log('hands',stringedHands)
+
+  var url = 'https://api.pokerapi.dev/v1/winner/texas_holdem?cc='
+
+
+  var urlwithBoard = url + stringedBoard.replace('T','10');
+
+  stringedHands.forEach((player) => {
+    urlwithBoard = urlwithBoard + '&pc[]=' + player.hole.replace('T','10')
+  })
+
+  console.log(urlwithBoard)
+  return axios.get(urlwithBoard)
+    .then((request) => {
+      return request.data
+    })
+    .catch((err) => {
+      console.log(err)
+    })
+}
+
+
+
+exports.unMatrixCards = unMatrixCards;
+exports.buildDeck = buildDeck;
+exports.handleShowdown = handleShowdown;
