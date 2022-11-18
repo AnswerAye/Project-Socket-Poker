@@ -25,7 +25,7 @@ var deck = []
 var flop= false;
 var turn= false;
 var river= false;
-var activeBet= true;
+var activeBet= 0;
 var allPlayersActed;
 var board = [];
 var potSize = 0;
@@ -38,16 +38,16 @@ var turnAllPlayersFalse = () => {
   }
 }
 var newBettingRound = () => {
+  activeBet = 0;
   counter = 0;
-  let turn = allPlayersInRound[counter].name
-  io.emit('trackTurns', turn)
-  io.emit('bettingRoundOver')
+  let turn = allPlayersInRound[counter].name;
+  io.emit('trackTurns', turn);
 }
 
 var newRound = () => {
   console.log('round generation',allPlayers);
   allPlayersInRound = JSON.parse(JSON.stringify(allPlayers));
-  console.log('after assignment',allPlayersInRound);
+  io.emit('playersInRound', allPlayersInRound);
   deck = algo.buildDeck();
 
   for (let card = 0; card < 2; card += 1) {
@@ -58,20 +58,32 @@ var newRound = () => {
   }
 
   for(let i = 0; i < allPlayersInRound.length; i += 1) {
-    io.to(allPlayersInRound[i].id).emit('giveCards', allPlayersInRound[i].hole)
+    io.to(allPlayersInRound[i].id).emit('giveCards', allPlayersInRound[i].hole);
   }
 
   counter = 0;
 
-  let turn = allPlayersInRound[counter].name
-  console.log(deck)
+  let turn = allPlayersInRound[counter].name;
+  console.log(deck);
   board = [];
-  io.emit('boardCards', board)
-  io.emit('trackTurns', turn)
+  io.emit('boardCards', board);
+  io.emit('trackTurns', turn);
 }
 
 async function resolveShowdown() {
   var showdownObject = await algo.handleShowdown(board, allPlayersInRound);
+
+  if(showDownObject.winners.length === 1) {
+    allPlayers.forEach((player) => {
+      if(player.name === allPlayersInRound[0].name) {
+        player.bank = player.bank + potSize
+      }
+    })
+  }
+  if(showDownObject.winners.length > 1) {
+
+  }
+  controllers.updateBanks(allPlayers);
   console.log(showdownObject)
   io.emit('winner', showdownObject.winners)
   setTimeout(() => {
@@ -118,13 +130,22 @@ io.on('connection', function(socket) {
     if(actionObject.action === 'fold') {
       for(let i = 0; i < allPlayersInRound.length; i++) {
         if(allPlayersInRound[i].name === actionObject.name) {
-          console.log('currentPlayer',allPlayersInRound)
+          console.log(allPlayersInRound[i].name)
+          console.log(actionObject.name)
+          allPlayers.forEach((singlePlayer) => {
+            if(singlePlayer.name === allPlayersInRound[i].name) {
+              console.log('entered here', singlePlayer.bank)
+              singlePlayer.bank = allPlayersInRound[i].bank
+              console.log('changed it', singlePlayer.bank)
+            }
+          })
           allPlayersInRound.splice(i,1)
-          console.log('currentPlayer after deletion',allPlayersInRound)
           counter--
+
 
         }
       }
+      io.emit('playersInRound', allPlayersInRound)
     }
 
     if(actionObject.action === 'bet') {
@@ -135,9 +156,23 @@ io.on('connection', function(socket) {
           singlePlayer.bank = singlePlayer.bank - actionObject.betnumber
         }
       })
+      console.log(allPlayersInRound)
+      activeBet= actionObject.betnumber
+      potSize += actionObject.betnumber
+      socket.emit('players', allPlayers)
+
+
+    }
+
+    if(actionObject.action === 'call') {
+      allPlayersInRound.forEach((singlePlayer) => {
+        if(singlePlayer.name === actionObject.name) {
+          singlePlayer.bank = singlePlayer.bank - activeBet
+        }
+      })
 
       console.log(allPlayersInRound)
-      socket.emit('players', allPlayers)
+      socket.emit('playersInRound', allPlayersInRound)
 
 
     }
@@ -148,6 +183,12 @@ io.on('connection', function(socket) {
         name: allPlayersInRound[0].name,
         potSize: potSize
       }
+      allPlayers.forEach((player) => {
+        if(player.name === allPlayersInRound[0].name) {
+          player.bank = player.bank + potSize
+        }
+      })
+      controllers.updateBanks(allPlayers);
       io.emit('winner', allPlayersInRound[0].name)
       setTimeout(() => {
         newRound();

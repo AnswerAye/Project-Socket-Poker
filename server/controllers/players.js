@@ -49,3 +49,19 @@ exports.signUpUser = (req, res) => {
     res.send('Successfully created!');
   })
 }
+
+exports.updateBanks = (playerArray) => {
+
+
+  console.log('database attempted to update',playerArray)
+  playerArray.forEach((player) => {
+    console.log(player)
+    Player.updateOne({name: player.name}, {currentBank: player.bank}, function (err, success) {
+      if(err){
+        console.log(err)
+      } else {
+        console.log("successfully updated")
+      }
+    })
+  })
+}

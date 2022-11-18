@@ -156,12 +156,14 @@ function App() {
       setTablePop(true);
     }
   });
+  socket.on('playersInRound', function (players) {
+    setPlayersinHand(players);
+  });
   socket.on('joinSuccessful', function () {
     setTable(true);
   });
   socket.on('boardCards', function (boardArray) {
     setBoard(boardArray);
-    console.log(boardArray);
   });
   socket.on('trackTurns', function (player) {
     setGameStarted(true);
@@ -475,9 +477,10 @@ function IndPlayer(_ref) {
     turnTracker = _ref.turnTracker,
     user = _ref.user,
     hole = _ref.hole,
-    unMatrixCards = _ref.unMatrixCards;
+    unMatrixCards = _ref.unMatrixCards,
+    inHand = _ref.inHand;
   var easyDisplay = unMatrixCards(hole);
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, user === name ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, "YOU") : null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, name), user === name && hole.length > 0 ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, easyDisplay) : null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, bank), turnTracker ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, "X") : null);
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, user === name ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, "YOU") : null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, name), user === name && hole.length > 0 ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, easyDisplay) : null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, bank), turnTracker ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, "TURN") : null, inHand ? null : /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, "FOLDED"));
 }
 
 /***/ }),
@@ -504,13 +507,22 @@ function Table(_ref) {
     hole = _ref.hole,
     user = _ref.user,
     unMatrixCards = _ref.unMatrixCards,
-    board = _ref.board;
+    board = _ref.board,
+    currentPlayersinHand = _ref.currentPlayersinHand;
   var easyBoard;
   if (board.length > 0) {
     easyBoard = unMatrixCards(board);
   }
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, board.length > 0 ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, easyBoard) : null, currentPlayers.map(function (indPlayer) {
     var turnTracker = indPlayer.name === currentTurn;
+    var inHand = false;
+    if (currentPlayersinHand.length > 0) {
+      for (var i = 0; i < currentPlayersinHand.length; i++) {
+        if (indPlayer.name === currentPlayersinHand[i].name) {
+          inHand = true;
+        }
+      }
+    }
     return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_IndPlayer_IndPlayer_jsx__WEBPACK_IMPORTED_MODULE_1__["default"], {
       key: Math.random(),
       name: indPlayer.name,
@@ -518,7 +530,8 @@ function Table(_ref) {
       turnTracker: turnTracker,
       user: user,
       hole: hole,
-      unMatrixCards: unMatrixCards
+      unMatrixCards: unMatrixCards,
+      inHand: inHand
     });
   }));
 }

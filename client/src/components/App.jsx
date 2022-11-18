@@ -130,13 +130,16 @@ export default function App() {
       setTablePop(true);
     }
   })
+
+  socket.on('playersInRound', (players) => {
+    setPlayersinHand(players)
+  })
   socket.on('joinSuccessful', () => {
     setTable(true)
   })
 
   socket.on('boardCards', (boardArray) => {
     setBoard(boardArray)
-    console.log(boardArray)
   })
 
   socket.on('trackTurns', (player) => {

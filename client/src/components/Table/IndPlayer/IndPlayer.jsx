@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 
 
 
-export default function IndPlayer({name,bank, turnTracker, user,hole, unMatrixCards}) {
+export default function IndPlayer({name,bank, turnTracker, user,hole, unMatrixCards, inHand}) {
 
 
 
@@ -17,7 +17,8 @@ export default function IndPlayer({name,bank, turnTracker, user,hole, unMatrixCa
       {user === name && hole.length > 0 ? <div>{easyDisplay}</div> : null}
       <div>{bank}</div>
 
-      {turnTracker ? <div>X</div> : null}
+      {turnTracker ? <div>TURN</div> : null}
+      {inHand ? null : <div>FOLDED</div>}
 
     </div>
   )
