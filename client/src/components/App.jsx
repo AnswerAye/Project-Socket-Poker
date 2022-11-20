@@ -40,6 +40,7 @@ export default function App() {
   const [board, setBoard] = useState([]);
   const [currentInput, setInput] = useState(initialValues)
   const [activeBet, setBet] = useState(0);
+  const [pot, setPot] = useState(0);
 
 
 
@@ -67,11 +68,11 @@ export default function App() {
       setInput(initialValues)
       return;
     }
-
+    var numberBetNumber = Number(currentInput.betnumber)
     var actionObject = {
       name: user,
       action: name,
-      betnumber: currentInput.betnumber
+      betnumber: numberBetNumber
     }
     socket.emit('playerAction', actionObject)
 
@@ -122,25 +123,23 @@ export default function App() {
   }
 
 
-  socket.on('players', (players) => {
-    console.log(players)
-    setPlayers(players)
-    console.log(currentPlayers)
+  socket.on('gameObject', (gameObject) => {
+
+    setPlayers(gameObject.allPlayers)
+    setPlayersinHand(gameObject.allPlayersInRound)
+    setBoard(gameObject.board)
+    setPot(gameObject.potSize);
+
     if(currentPlayers.length === 9) {
       setTablePop(true);
     }
   })
 
-  socket.on('playersInRound', (players) => {
-    setPlayersinHand(players)
-  })
   socket.on('joinSuccessful', () => {
     setTable(true)
   })
 
-  socket.on('boardCards', (boardArray) => {
-    setBoard(boardArray)
-  })
+
 
   socket.on('trackTurns', (player) => {
     setGameStarted(true);
@@ -158,6 +157,9 @@ export default function App() {
   socket.on('bettingRoundOver', () => {
     setBet(0);
   })
+  socket.on('failedBet', () => {
+    console.log('Please make a bet above the minimum bet size')
+  })
 
 
 
@@ -165,7 +167,7 @@ export default function App() {
 
 
   useEffect(() => {
-    socket.emit('grabPlayers');
+    socket.emit('grabData');
     if(!loggedIn) {
       toggle();
     }
@@ -185,7 +187,7 @@ export default function App() {
           {onATable && !tableFull ? null : <button onClick={joinTable}>Join Table</button>}
         </div>
         <div>
-          {currentPlayers.length >= 2 && !gameStarted && onATable ? <button onClick={sendStartGame}>Start The Game!</button> : null}
+          {currentPlayers.length >= 4 && !gameStarted && onATable ? <button onClick={sendStartGame}>Start The Game!</button> : null}
 
         </div>
       </div>
@@ -199,6 +201,7 @@ export default function App() {
             user={user}
             unMatrixCards={unMatrixCards}
             board={board}
+            pot={pot}
           /> : <div>Waiting for {4 - currentPlayers.length}</div>}
 
       </div>

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import IndPlayer from './IndPlayer/IndPlayer.jsx';
 
 
-export default function Table({currentPlayers, currentTurn, hole, user, unMatrixCards,board, currentPlayersinHand}) {
+export default function Table({currentPlayers, currentTurn, hole, user, unMatrixCards,board, currentPlayersinHand, pot}) {
 
   var easyBoard;
   if(board.length > 0) {
@@ -13,6 +13,7 @@ export default function Table({currentPlayers, currentTurn, hole, user, unMatrix
   return (
     <div>
       {board.length > 0 ? <div>{easyBoard}</div> : null}
+      {pot > 0 ? <div>{pot}</div> : null}
       {currentPlayers.map((indPlayer) => {
         var turnTracker = indPlayer.name === currentTurn
         var inHand = false;
@@ -33,6 +34,7 @@ export default function Table({currentPlayers, currentTurn, hole, user, unMatrix
           hole={hole}
           unMatrixCards={unMatrixCards}
           inHand={inHand}
+          currentPlayersinHand={currentPlayersinHand}
           />
       })}
     </div>

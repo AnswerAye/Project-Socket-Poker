@@ -26,6 +26,7 @@ var unMatrixCards = (hand) => {
 }
 
 var handleShowdown = (board, playerArray) => {
+  console.log(board)
   var stringedBoard = unMatrixCards(board).toString();
 
   console.log('playerArray',playerArray)

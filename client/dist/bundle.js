@@ -98,6 +98,10 @@ function App() {
     _useState26 = _slicedToArray(_useState25, 2),
     activeBet = _useState26[0],
     setBet = _useState26[1];
+  var _useState27 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(0),
+    _useState28 = _slicedToArray(_useState27, 2),
+    pot = _useState28[0],
+    setPot = _useState28[1];
   var joinTable = function joinTable() {
     var playerInfo = {
       name: user,
@@ -116,10 +120,11 @@ function App() {
       setInput(initialValues);
       return;
     }
+    var numberBetNumber = Number(currentInput.betnumber);
     var actionObject = {
       name: user,
       action: name,
-      betnumber: currentInput.betnumber
+      betnumber: numberBetNumber
     };
     socket.emit('playerAction', actionObject);
     if (name === 'bet') {
@@ -148,22 +153,17 @@ function App() {
       return obj;
     }, []).join(" ");
   };
-  socket.on('players', function (players) {
-    console.log(players);
-    setPlayers(players);
-    console.log(currentPlayers);
+  socket.on('gameObject', function (gameObject) {
+    setPlayers(gameObject.allPlayers);
+    setPlayersinHand(gameObject.allPlayersInRound);
+    setBoard(gameObject.board);
+    setPot(gameObject.potSize);
     if (currentPlayers.length === 9) {
       setTablePop(true);
     }
   });
-  socket.on('playersInRound', function (players) {
-    setPlayersinHand(players);
-  });
   socket.on('joinSuccessful', function () {
     setTable(true);
-  });
-  socket.on('boardCards', function (boardArray) {
-    setBoard(boardArray);
   });
   socket.on('trackTurns', function (player) {
     setGameStarted(true);
@@ -178,8 +178,11 @@ function App() {
   socket.on('bettingRoundOver', function () {
     setBet(0);
   });
+  socket.on('failedBet', function () {
+    console.log('Please make a bet above the minimum bet size');
+  });
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
-    socket.emit('grabPlayers');
+    socket.emit('grabData');
     if (!loggedIn) {
       toggle();
     }
@@ -193,7 +196,7 @@ function App() {
     id: "navbar"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, onATable && !tableFull ? null : /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("button", {
     onClick: joinTable
-  }, "Join Table")), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, currentPlayers.length >= 2 && !gameStarted && onATable ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("button", {
+  }, "Join Table")), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, currentPlayers.length >= 4 && !gameStarted && onATable ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("button", {
     onClick: sendStartGame
   }, "Start The Game!") : null)), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     id: "table"
@@ -204,7 +207,8 @@ function App() {
     hole: hole,
     user: user,
     unMatrixCards: unMatrixCards,
-    board: board
+    board: board,
+    pot: pot
   }) : /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, "Waiting for ", 4 - currentPlayers.length)), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     id: "userinteraction"
   }, currentTurn === user && activeBet === 0 ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("button", {
@@ -478,9 +482,16 @@ function IndPlayer(_ref) {
     user = _ref.user,
     hole = _ref.hole,
     unMatrixCards = _ref.unMatrixCards,
-    inHand = _ref.inHand;
+    inHand = _ref.inHand,
+    currentPlayersinHand = _ref.currentPlayersinHand;
+  var updatedPlayerbank;
+  currentPlayersinHand.forEach(function (player) {
+    if (player.name === name) {
+      updatedPlayerbank = player.bank;
+    }
+  });
   var easyDisplay = unMatrixCards(hole);
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, user === name ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, "YOU") : null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, name), user === name && hole.length > 0 ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, easyDisplay) : null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, bank), turnTracker ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, "TURN") : null, inHand ? null : /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, "FOLDED"));
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, user === name ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, "YOU") : null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, name), user === name && hole.length > 0 ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, easyDisplay) : null, updatedPlayerbank ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, updatedPlayerbank) : /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, bank), turnTracker ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, "TURN") : null, inHand ? null : /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, "FOLDED"));
 }
 
 /***/ }),
@@ -508,12 +519,13 @@ function Table(_ref) {
     user = _ref.user,
     unMatrixCards = _ref.unMatrixCards,
     board = _ref.board,
-    currentPlayersinHand = _ref.currentPlayersinHand;
+    currentPlayersinHand = _ref.currentPlayersinHand,
+    pot = _ref.pot;
   var easyBoard;
   if (board.length > 0) {
     easyBoard = unMatrixCards(board);
   }
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, board.length > 0 ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, easyBoard) : null, currentPlayers.map(function (indPlayer) {
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, board.length > 0 ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, easyBoard) : null, pot > 0 ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, pot) : null, currentPlayers.map(function (indPlayer) {
     var turnTracker = indPlayer.name === currentTurn;
     var inHand = false;
     if (currentPlayersinHand.length > 0) {
@@ -531,7 +543,8 @@ function Table(_ref) {
       user: user,
       hole: hole,
       unMatrixCards: unMatrixCards,
-      inHand: inHand
+      inHand: inHand,
+      currentPlayersinHand: currentPlayersinHand
     });
   }));
 }
