@@ -58,7 +58,6 @@ var handleShowdown = (board, playerArray) => {
       for(let i = 0; i < request.data.winners.length; i++){
         stringedHands.forEach((player) => {
           if(request.data.winners[i].cards === player.hole.replace('T','10')) {
-            console.log('entered here')
             request.data.winners[i].winnername = player.name
           }
         })

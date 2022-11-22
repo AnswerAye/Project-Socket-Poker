@@ -35,7 +35,7 @@ exports.signUpUser = (req, res) => {
 
   createUser.currentBank = 500;
 
-  console.log(createUser);
+
   Player.create(createUser, function (err, complete) {
     if (err) {
       console.log('failed to create')

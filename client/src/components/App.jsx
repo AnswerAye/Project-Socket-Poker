@@ -3,6 +3,7 @@ const { io } = require("socket.io-client");
 import SplashModal from './Modal/SplashModal.jsx';
 import Table from './Table/Table.jsx';
 import useModal from '../subcomponents/ModalHook.jsx';
+import './App.css'
 
 
 const socket = io();
@@ -125,6 +126,8 @@ export default function App() {
 
   socket.on('gameObject', (gameObject) => {
 
+    console.log(gameObject)
+
     setPlayers(gameObject.allPlayers)
     setPlayersinHand(gameObject.allPlayersInRound)
     setBoard(gameObject.board)
@@ -175,7 +178,7 @@ export default function App() {
 
 
   }, [])
-  return (<div>
+  return (<div className="canvas">
      <SplashModal
         isShowing={isShowing}
         hide={toggle}
@@ -183,13 +186,11 @@ export default function App() {
         setUser={setUser}
       />
       <div id="navbar">
-        <div>
-          {onATable && !tableFull ? null : <button onClick={joinTable}>Join Table</button>}
-        </div>
-        <div>
-          {currentPlayers.length >= 4 && !gameStarted && onATable ? <button onClick={sendStartGame}>Start The Game!</button> : null}
+        {gameStarted ? null : <div className="buttonDiv">
+          {onATable && !tableFull ? null : <button className="joinTableButton"onClick={joinTable}>Join Table</button>}
+          {currentPlayers.length >= 4 && !gameStarted && onATable ? <button className="startGameButton" onClick={sendStartGame}>Start The Game!</button> : null}
+        </div>}
 
-        </div>
       </div>
       <div id="table">
 

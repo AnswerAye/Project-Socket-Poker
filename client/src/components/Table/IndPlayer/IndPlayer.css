@@ -1,0 +1,98 @@
+.playerContainer {
+  margin: 50px;
+  /* justify-content: center; */
+  text-align: center;
+
+}
+
+.dealerButton {
+  background-color: ivory;
+  color: black;
+  border: none;
+  padding: 5px;
+  font-family: system-ui;
+  font-size: 8px;
+  height: 30px;
+  width: 30px;
+  box-shadow: 0 2px 4px darkslategrey;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 30px;
+  /* justify-content: center; */
+  margin-left: 30%;
+}
+
+.dealerText {
+  margin-top: 32%;
+}
+
+.IndPlayerOnTurn {
+  margin: 10px;
+  padding:10px;
+  box-shadow: 0px 0px 20px 2px rgb(0 0 0 / 25%);
+  border-width: 4px;
+  border-color: greenyellow;
+  border-style: solid;
+  border-radius: 5px;
+}
+
+.IndPlayer {
+  margin: 10px;
+  padding:10px;
+  box-shadow: 0px 0px 20px 2px rgb(0 0 0 / 25%);
+  border-width: 4px;
+  border-color: lightgrey;
+  border-style: solid;
+  border-radius: 5px;
+}
+
+.dealerButtonImage{
+  height: 30px;
+  width: 30px;
+  object-fit: cover;
+}
+
+.playerCard{
+  height: 100px;
+  object-fit: cover;
+  margin: 5px;
+}
+.playerCardBack{
+  height: 100px;
+  object-fit: cover;
+  margin: 5px;
+}
+.photoContainer {
+  margin: 5px;
+  display: flex;
+}
+
+.bankSize {
+  color: ivory;
+}
+
+.player{
+  margin: 10px;
+}
+.currentPlayer{
+  margin: 10px;
+  font-weight: bolder;
+}
+
+.foldedPlayerContainer{
+  margin: 50px;
+  /* justify-content: center; */
+  text-align: center;
+
+}
+.FoldedIndPlayer {
+
+  opacity: 0.5;
+  margin: 10px;
+  padding:10px;
+  box-shadow: 0px 0px 20px 2px rgb(0 0 0 / 25%);
+  border-width: 4px;
+  border-color: lightgrey;
+  border-style: solid;
+  border-radius: 5px;
+}

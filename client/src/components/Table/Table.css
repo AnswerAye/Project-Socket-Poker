@@ -1,0 +1,64 @@
+
+#table {
+  display: flex;
+  height: 70%;
+  justify-content: center;
+  font-family: Arial, sans-serif;
+}
+
+.firstSection {
+  display: flex;
+  justify-content: space-evenly;
+  width: 90%;
+  margin: 100px;
+  margin-top: 1%;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.board {
+  margin: 50px;
+  /* justify-content: center; */
+  text-align: center;
+}
+
+.pot {
+  text-align: center;
+  margin: 25px;
+  margin-left: 45%;
+  position: relative;
+  top: 40px;
+  /* left: 10px; */
+  border-radius: 90px;
+  background-color: #222222;
+  height: 50px;
+  width: 10%;
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  font-size: xx-large;
+  color: darkgrey;
+}
+
+.secondSection{
+  display: flex;
+  justify-content: space-evenly;
+  width: 90%;
+  margin: 100px;
+  margin-top: 1%;
+  font-weight: bold;
+}
+
+.boardCard {
+  height: 90px;
+}
+.emptyCard {
+  height: 90px;
+  width: 60px;
+}
+.boardDiv {
+  display: flex;
+  justify-content: space-evenly;
+  width: 30%;
+  margin-left: 35%;
+}
